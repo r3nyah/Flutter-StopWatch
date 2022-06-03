@@ -1,30 +1,46 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:stopwatch/button_widget.dart';
+import 'button_widget.dart';
 
+
+void main () {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  //const Todo({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: StopWatchTimerPage(),
+    );
+  }
+}
 class StopWatchTimerPage extends StatefulWidget {
   @override
-  State<StopWatchTimerPage> createState() => _StopWatchTimerPageState();
+  _StopWatchTimerPageState createState() => _StopWatchTimerPageState();
 }
 
 class _StopWatchTimerPageState extends State<StopWatchTimerPage> {
   static const countdownDuration = Duration(minutes: 10);
-  Duration duration= Duration();
+  Duration duration = Duration();
   Timer? timer;
-  bool countDown = true;
+
+  bool countDown =true;
 
   @override
-  void initState(){
+  void initState() {
+    // TODO: implement initState
     super.initState();
     reset();
   }
 
   void reset(){
     if (countDown){
-      setState(()=>
+      setState(() =>
       duration = countdownDuration);
-    } else {
-      setState(()=>
+    } else{
+      setState(() =>
       duration = Duration());
     }
   }
@@ -34,13 +50,14 @@ class _StopWatchTimerPageState extends State<StopWatchTimerPage> {
   }
 
   void addTime(){
-    final addSeconds = countDown? -1:1;
-    setState((){
+    final addSeconds = countDown ? -1 : 1;
+    setState(() {
       final seconds = duration.inSeconds + addSeconds;
       if (seconds < 0){
         timer?.cancel();
-      }else{
+      } else{
         duration = Duration(seconds: seconds);
+
       }
     });
   }
@@ -51,6 +68,7 @@ class _StopWatchTimerPageState extends State<StopWatchTimerPage> {
     }
     setState(() => timer?.cancel());
   }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: Colors.orange[50],
@@ -87,22 +105,19 @@ class _StopWatchTimerPageState extends State<StopWatchTimerPage> {
     );
   }
 
-  buildTimeCard({required String time, required String header}) =>
+  Widget buildTimeCard({required String time, required String header}) =>
       Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: EdgeInsets.all(10),
+            padding: EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20)
             ),
             child: Text(
-              time,
-              style: TextStyle(fontWeight: FontWeight.bold,
-                  color: Colors.black,fontSize: 50
-              ),
-            ),
+              time, style: TextStyle(fontWeight: FontWeight.bold,
+                color: Colors.black,fontSize: 50),),
           ),
           SizedBox(height: 24,),
           Text(header,style: TextStyle(color: Colors.black45)),
