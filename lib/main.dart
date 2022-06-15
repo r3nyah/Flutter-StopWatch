@@ -1,157 +1,89 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'button_widget.dart';
+import 'package:flutter/services.dart';
+import 'package:stopwatch/ui/stopwatch.dart';
 
+bool isLight = false;
+StreamController<bool> isLightTheme = StreamController();
 
-void main () {
+void main (){
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  //const Todo({Key? key}) : super(key: key);
+//  const MyApp({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: StopWatchTimerPage(),
-    );
-  }
-}
-class StopWatchTimerPage extends StatefulWidget {
-  @override
-  _StopWatchTimerPageState createState() => _StopWatchTimerPageState();
-}
-
-class _StopWatchTimerPageState extends State<StopWatchTimerPage> {
-  static const countdownDuration = Duration(minutes: 10);
-  Duration duration = Duration();
-  Timer? timer;
-
-  bool countDown =true;
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    reset();
-  }
-
-  void reset(){
-    if (countDown){
-      setState(() =>
-      duration = countdownDuration);
-    } else{
-      setState(() =>
-      duration = Duration());
-    }
-  }
-
-  void startTimer(){
-    timer = Timer.periodic(Duration(seconds: 1),(_) => addTime());
-  }
-
-  void addTime(){
-    final addSeconds = countDown ? -1 : 1;
-    setState(() {
-      final seconds = duration.inSeconds + addSeconds;
-      if (seconds < 0){
-        timer?.cancel();
-      } else{
-        duration = Duration(seconds: seconds);
-
-      }
-    });
-  }
-
-  void stopTimer({bool resets = true}){
-    if (resets){
-      reset();
-    }
-    setState(() => timer?.cancel());
-  }
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: Colors.orange[50],
-    appBar: AppBar(
-      automaticallyImplyLeading: false,
-      title: Text("Flutter StopWatch Timer Demo"),
-    ),
-    body: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          buildTime(),
-          SizedBox(height: 80,),
-          buildButtons()
-        ],
-      ),
-    ),
-  );
-
-  Widget buildTime(){
-    String twoDigits(int n) => n.toString().padLeft(2,'0');
-    final hours =twoDigits(duration.inHours);
-    final minutes =twoDigits(duration.inMinutes.remainder(60));
-    final seconds =twoDigits(duration.inSeconds.remainder(60));
-    return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          buildTimeCard(time: hours, header:'HOURS'),
-          SizedBox(width: 8,),
-          buildTimeCard(time: minutes, header:'MINUTES'),
-          SizedBox(width: 8,),
-          buildTimeCard(time: seconds, header:'SECONDS'),
-        ]
-    );
-  }
-
-  Widget buildTimeCard({required String time, required String header}) =>
-      Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: EdgeInsets.all(8),
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20)
-            ),
-            child: Text(
-              time, style: TextStyle(fontWeight: FontWeight.bold,
-                color: Colors.black,fontSize: 50),),
-          ),
-          SizedBox(height: 24,),
-          Text(header,style: TextStyle(color: Colors.black45)),
-        ],
-      );
-
-  Widget buildButtons(){
-    final isRunning = timer == null? false: timer!.isActive;
-    final isCompleted = duration.inSeconds == 0;
-    return isRunning || isCompleted
-        ? Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        ButtonWidget(
-            text:'STOP',
-            onClicked: (){
-              if (isRunning){
-                stopTimer(resets: false);
-              }
-            }),
-        SizedBox(width: 12,),
-        ButtonWidget(
-            text: "CANCEL",
-            onClicked: stopTimer
-        ),
-      ],
-    )
-        : ButtonWidget(
-        text: "Start Timer!",
-        color: Colors.black,
-        backgroundColor: Colors.white,
-        onClicked: (){
-          startTimer();
+    return StreamBuilder<bool>(
+        initialData: true,
+        stream: isLightTheme.stream,
+        builder: (context, snapshot) {
+          return MaterialApp(
+            theme: snapshot.data == true ? ThemeData.light() : ThemeData.dark(),
+            debugShowCheckedModeBanner: false,
+            home: MyHomePage(),
+          );
         });
+  }
+}
 
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key}) : super(key: key);
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  @override
+  Widget build(BuildContext context) {
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      child: Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 20,
+                ),
+                Container(
+                  child: isLight
+                      ? GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isLight = false;
+                        isLightTheme.add(true);
+                      });
+                    },
+                    child: Icon(
+                      Icons.wb_sunny,
+                      size: 37,
+                    ),
+                  )
+                      : GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isLight = true;
+                        isLightTheme.add(false);
+                      });
+                    },
+                    child: Icon(
+                      Icons.nightlight,
+                      size: 37,
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  height: 100,
+                ),
+                AspectRatio(aspectRatio: .6, child: StopWatch()),
+              ],
+            ),
+          ),
+        ),
+      ),
+        value:
+        isLight ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark);
   }
 }
